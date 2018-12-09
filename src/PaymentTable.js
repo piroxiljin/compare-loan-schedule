@@ -17,19 +17,23 @@ const styles = theme => ({
   control: {
     padding: theme.spacing.unit * 2,
   },
+  currencyCell: {
+    fontFamily: "Courier New",
+    textAlign: "right"
+  }
 });
 
-var moneyFormat = (value) => Math.floor(value * 100) / 100;
+var moneyFormat = (value) => (Math.floor(value * 100) / 100).toLocaleString('ru-RU', {minimumFractionDigits: 2});
 
 function PaymentTable(props) {
   const listItems = props.payments.map((item, index) => 
     <TableRow key={index.toString()}>
       <TableCell>{index+1}.</TableCell>
       <TableCell>{dateFormat(new Date(item.periodDate), "yyyy.mm")}</TableCell>
-      <TableCell>{moneyFormat(item.currentDebt)}</TableCell>
-      <TableCell>{moneyFormat(item.payment)}</TableCell>
-      <TableCell>{moneyFormat(item.interest)}</TableCell>
-      <TableCell>{moneyFormat(item.retirement)}</TableCell>
+      <TableCell className={props.classes.currencyCell}>{moneyFormat(item.currentDebt)}</TableCell>
+      <TableCell className={props.classes.currencyCell}>{moneyFormat(item.payment)}</TableCell>
+      <TableCell className={props.classes.currencyCell}>{moneyFormat(item.interest)}</TableCell>
+      <TableCell className={props.classes.currencyCell}>{moneyFormat(item.retirement)}</TableCell>
     </TableRow>
   );
   return <Table>
