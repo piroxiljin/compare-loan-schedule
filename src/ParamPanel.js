@@ -4,10 +4,24 @@ import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
 
 import FormControl from '@material-ui/core/FormControl';
-import { Grid } from '@material-ui/core';
+import { Grid, withStyles } from '@material-ui/core';
+
+const styles = theme => ({
+  root: {
+    flexGrow: 1,
+    marginTop: 16,
+  },
+  paper: {
+    height: 140,
+    width: 100,
+  },
+  control: {
+    padding: theme.spacing.unit * 2,
+  },
+});
 
 function ParamPanel(props) {
-    return <Grid container spacing={8}>
+    return <Grid container spacing={8} className={props.classes.root}>
       <Grid item>
         <FormControl>
           <InputLabel>Loan amount</InputLabel>
@@ -36,4 +50,4 @@ function ParamPanel(props) {
 }
 
 
-export default ParamPanel
+export default withStyles(styles)(ParamPanel)

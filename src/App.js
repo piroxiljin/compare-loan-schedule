@@ -1,9 +1,31 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import ParamPanel from './ParamPanel';
-import PaymentTable  from './PaymentTable';
-import { Grid, Paper } from '@material-ui/core';
+import { Grid, Paper, AppBar, Typography, Tabs, Tab, Zoom, Fab, withStyles } from '@material-ui/core';
+import LoanTask from './LoanTask';
+import AddIcon from '@material-ui/icons/Add';
+
+const styles = theme => ( {
+  fab: {
+    position: 'absolute',
+    bottom: theme.spacing.unit * 2,
+    right: theme.spacing.unit * 2,
+  },
+  tabs: {
+    marginTop: 48
+  }
+});
+
+function uniqueID(){
+  function chr4(){
+    return Math.random().toString(16).slice(-4);
+  }
+  return chr4() + chr4() +
+    '-' + chr4() +
+    '-' + chr4() +
+    '-' + chr4() +
+    '-' + chr4() + chr4() + chr4();
+}
 
 class App extends Component {
   constructor (props) {
@@ -11,37 +33,59 @@ class App extends Component {
     this.handleBaseLoanChange = this.handleBaseLoanChange.bind(this);
     this.handleBasePeriodsChange = this.handleBasePeriodsChange.bind(this);
     this.handleBaseLoanRateChange = this.handleBaseLoanRateChange.bind(this);
+    this.handleAddLoanTask = this.handleAddLoanTask.bind(this);
 
     this.state = {
       baseLoan: 1000000,
       basePeriods: 1,
       baseLoanRate: 0.10,
-      baseDate: "2018-12"
+      baseDate: "2018-12",
+      activePage: "",
+      pages: {},
+      pagesIds: []
     };
   }
 
   handleBaseLoanChange(e) {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+
     if (! isNaN(e.target.value)) {
-      this.setState({baseLoan: e.target.value});
-    } else {
-      this.setState({baseLoan: this.state.baseLoan});
+      currentPage["baseLoan"] = e.target.value;
     }
+    pages[activePageId] = currentPage;
+    this.setState({
+      pages: pages
+    });
   }
 
   handleBasePeriodsChange(e) {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+
     if (! isNaN(e.target.value)) {
-      this.setState({basePeriods: e.target.value});
-    } else {
-      this.setState({basePeriods: this.state.basePeriods});
+      currentPage["basePeriods"] = e.target.value;
     }
+    pages[activePageId] = currentPage;
+    this.setState({
+      pages: pages
+    });
   }
 
   handleBaseLoanRateChange(e) {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+
     if (! isNaN(e.target.value)) {
-      this.setState({baseLoanRate: e.target.value});
-    } else {
-      this.setState({baseLoanRate: this.state.baseLoanRate});
+      currentPage["baseLoanRate"] = e.target.value;
     }
+    pages[activePageId] = currentPage;
+    this.setState({
+      pages: pages
+    });
   }
 
   calculateSchedule(loanParams) {
@@ -95,39 +139,72 @@ class App extends Component {
     return payments;
   }
 
-  render() {
-    var payments = this.calculateSchedule({
+  handleAddLoanTask() {
+    var pages = this.state.pages;
+    var pagesIds = this.state.pagesIds;
+
+    const newId = uniqueID();
+    pagesIds.push(newId);
+    pages[newId] = {title: "new loan", id: newId,
       baseLoanRate: this.state.baseLoanRate,
       baseDate: this.state.baseDate,
       baseLoan: this.state.baseLoan,
-      basePeriods: this.state.basePeriods
+      basePeriods: this.state.basePeriods,
+    };
+    this.setState({
+      pages: pages,
+      pagesIds: pagesIds,
+      activePage: newId,
     });
+  }
+
+  handleTabChange = (event, value) => {
+    this.setState({
+      activePage: value,
+    });
+  }
+
+  render() {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+
+    var payments = currentPage && this.calculateSchedule({
+      baseLoanRate: currentPage.baseLoanRate,
+      baseDate: currentPage.baseDate,
+      baseLoan: currentPage.baseLoan,
+      basePeriods: currentPage.basePeriods
+    });
+
+    const tabList = this.state.pagesIds.map((pageId, index) => {
+      return <Tab label={this.state.pages[pageId].title} value={pageId} key={pageId}/>
+    });
+    
+    const content = currentPage && <LoanTask baseLoan={currentPage.baseLoan} 
+                              onBaseLoanChange={this.handleBaseLoanChange}
+                              basePeriods={currentPage.basePeriods}
+                              onBasePeriodsChange={this.handleBasePeriodsChange}
+                              baseLoanRate={currentPage.baseLoanRate}
+                              onBaseLoanRateChange={this.handleBaseLoanRateChange}
+                              payments={payments}/>;
 
     return (
       <div className="App">
-        <Grid container spacing={16} justify="center">
-          <Grid item>
-            <Paper>
-              <ParamPanel 
-                baseLoan={this.state.baseLoan}
-                onBaseLoanChange={this.handleBaseLoanChange} 
-                basePeriods={this.state.basePeriods}
-                onBasePeriodsChange={this.handleBasePeriodsChange}
-                baseLoanRate={this.state.baseLoanRate}
-                onBaseLoanRateChange={this.handleBaseLoanRateChange}
-                />
-            </Paper>
-          </Grid>
-          <Grid item>
-            <Paper>
-              <PaymentTable baseLoan={this.state.baseLoan} 
-                payments={payments} />
-            </Paper>
-          </Grid>
-        </Grid>
+        <AppBar color="primary">
+          <Typography variant="h3" color="textPrimary">
+            Loan calculator
+          </Typography>
+        </AppBar>
+        <Tabs className={this.props.classes.tabs} value={this.state.activePage} onChange={this.handleTabChange}>
+          {tabList}
+        </Tabs>
+        {content}
+        <Fab>
+          <AddIcon onClick={this.handleAddLoanTask} />
+        </Fab>
       </div>
     );
   }
 }
 
-export default App;
+export default withStyles(styles)(App);
