@@ -4,6 +4,8 @@ import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles';
 import { Table, TableRow, TableCell, TableHead, TableBody } from '@material-ui/core';
 
+var dateFormat = require('dateformat');
+
 const styles = theme => ({
   root: {
     flexGrow: 1,
@@ -17,22 +19,24 @@ const styles = theme => ({
   },
 });
 
+var moneyFormat = (value) => Math.floor(value * 100) / 100;
 
 function PaymentTable(props) {
-  const numbers = [1, 2, 3, 4, 5];
-  const listItems = numbers.map((number) => 
-    <TableRow key={number.toString()}>
-      <TableCell>{number}</TableCell>
-      <TableCell>{props.baseLoan}</TableCell>
-      <TableCell>0</TableCell>
-      <TableCell>0</TableCell>
-      <TableCell>0</TableCell>
+  const listItems = props.payments.map((item, index) => 
+    <TableRow key={index.toString()}>
+      <TableCell>{index+1}.</TableCell>
+      <TableCell>{dateFormat(new Date(item.periodDate), "yyyy.mm")}</TableCell>
+      <TableCell>{moneyFormat(item.currentDebt)}</TableCell>
+      <TableCell>{moneyFormat(item.payment)}</TableCell>
+      <TableCell>{moneyFormat(item.interest)}</TableCell>
+      <TableCell>{moneyFormat(item.retirement)}</TableCell>
     </TableRow>
   );
   return <Table>
     <TableHead>
       <TableRow>
         <TableCell>Period</TableCell>
+        <TableCell>Date</TableCell>
         <TableCell>Loan amount</TableCell>
         <TableCell>Minimal payment</TableCell>
         <TableCell>Interests</TableCell>
