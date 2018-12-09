@@ -35,14 +35,28 @@ class App extends Component {
     this.handleBaseLoanRateChange = this.handleBaseLoanRateChange.bind(this);
     this.handleAddLoanTask = this.handleAddLoanTask.bind(this);
 
+    var pages = {};
+    var pagesIds = [];
+    var activePage = "";
+    
+    try {
+      var restoredPages = JSON.parse(localStorage.getItem("pages") );
+      var restoredPagesIds = JSON.parse(localStorage.getItem("pagesIds") );
+      var restoredActivePage = localStorage.getItem("activePage");
+      pages = restoredPages;
+      pagesIds = restoredPagesIds;
+      activePage = restoredActivePage;
+    } catch(e) {
+    }
+
     this.state = {
       baseLoan: 1000000,
       basePeriods: 1,
       baseLoanRate: 0.10,
       baseDate: "2018-12",
-      activePage: "",
-      pages: {},
-      pagesIds: []
+      activePage: activePage || "",
+      pages: pages || {},
+      pagesIds: pagesIds || []
     };
   }
 
@@ -166,8 +180,16 @@ class App extends Component {
 
   render() {
     var pages = this.state.pages;
+    var pagesIds = this.state.pagesIds;
     var activePageId = this.state.activePage;
     var currentPage = pages[activePageId];
+
+    var pagesStr = JSON.stringify(pages);
+    localStorage.setItem("pages", pagesStr);
+    var idsStr = JSON.stringify(pagesIds);
+    localStorage.setItem("pagesIds", idsStr);
+    localStorage.setItem("activePage", activePageId);
+
 
     var payments = currentPage && this.calculateSchedule({
       baseLoanRate: currentPage.baseLoanRate,
