@@ -23,7 +23,7 @@ function PaymentTable(props) {
   const listItems = numbers.map((number) => 
     <TableRow key={number.toString()}>
       <TableCell>{number}</TableCell>
-      <TableCell>0</TableCell>
+      <TableCell>{props.baseLoan}</TableCell>
       <TableCell>0</TableCell>
       <TableCell>0</TableCell>
       <TableCell>0</TableCell>
