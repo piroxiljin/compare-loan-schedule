@@ -44,15 +44,14 @@ class App extends Component {
     }
   }
 
-
-  render() {
+  calculateSchedule(loanParams) {
     var payments = [];
-    const currentYearRate = this.state.baseLoanRate;
-    var currentDebt = this.state.baseLoan;
-    var restPeriods = this.state.basePeriods * 12;
+    const currentYearRate = loanParams.baseLoanRate;
+    var currentDebt = loanParams.baseLoan;
+    var restPeriods = loanParams.basePeriods * 12;
     var iteration = 200;
-    var currentYear = new Date(this.state.baseDate).getYear() + 1900;
-    var currentMonth = new Date(this.state.baseDate).getMonth();
+    var currentYear = new Date(loanParams.baseDate).getYear() + 1900;
+    var currentMonth = new Date(loanParams.baseDate).getMonth();
 
     var dayOfYears = [365, 365, 365, 366];
     var getDaysInYear = (year) => dayOfYears[year % 4];
@@ -93,6 +92,16 @@ class App extends Component {
       currentDebt -= retirement;
       restPeriods -= 1;
     }
+    return payments;
+  }
+
+  render() {
+    var payments = this.calculateSchedule({
+      baseLoanRate: this.state.baseLoanRate,
+      baseDate: this.state.baseDate,
+      baseLoan: this.state.baseLoan,
+      basePeriods: this.state.basePeriods
+    });
 
     return (
       <div className="App">
