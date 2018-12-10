@@ -5,6 +5,9 @@ import { Grid, Paper, AppBar, Typography, Tabs, Tab, Zoom, Fab, withStyles } fro
 import LoanTask from './LoanTask';
 import AddIcon from '@material-ui/icons/Add';
 
+var objectHash = require('object-hash');
+var deepEqual = require('deep-equal');
+
 const styles = theme => ( {
   fab: {
     position: 'absolute',
@@ -190,13 +193,26 @@ class App extends Component {
     localStorage.setItem("pagesIds", idsStr);
     localStorage.setItem("activePage", activePageId);
 
-
-    var payments = currentPage && this.calculateSchedule({
+    const loanDesc = {
       baseLoanRate: currentPage.baseLoanRate,
       baseDate: currentPage.baseDate,
       baseLoan: currentPage.baseLoan,
       basePeriods: currentPage.basePeriods
-    });
+    };
+    const loanKey = objectHash(loanDesc);
+    const loanDeskKey = loanKey + '-desc';
+    var storedLoanDesc = JSON.parse(sessionStorage.getItem(loanDeskKey) );
+
+    var payments
+    if (storedLoanDesc && deepEqual(loanDesc, storedLoanDesc)) {
+      payments = JSON.parse(sessionStorage.getItem(loanKey));
+    }
+
+    if (!payments) {
+      payments = currentPage && this.calculateSchedule(loanDesc);
+      sessionStorage.setItem(loanDeskKey, JSON.stringify(loanDesc));
+      sessionStorage.setItem(loanKey, JSON.stringify(payments));
+    }
 
     const tabList = this.state.pagesIds.map((pageId, index) => {
       return <Tab label={this.state.pages[pageId].title} value={pageId} key={pageId}/>
