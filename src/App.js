@@ -114,19 +114,24 @@ class App extends Component {
     var currentYear = new Date(loanParams.baseDate).getYear() + 1900;
     var currentMonth = new Date(loanParams.baseDate).getMonth();
 
-    var dayOfYears = [365, 365, 365, 366];
+    var currentMounthRateRought = currentYearRate / 12.0;
+    var currentTempRateK = Math.pow((1.0 + currentMounthRateRought), restPeriods);
+    var currentK = currentMounthRateRought * currentTempRateK / (currentTempRateK - 1.0);
+    var currentMounthPayment = currentDebt * currentK;
+
+    var dayOfYears = [366, 365, 365, 365];
     var getDaysInYear = (year) => dayOfYears[year % 4];
-    var getDaysInMonth = function(month,year) {
-      return new Date(year, month, 0).getDate();
+    var getDaysInMonth = function(year, month) {
+      // day = 0 - returns amount of days in previous mounth
+      return new Date(year, month+1, 0).getDate();
     };
 
     while (currentDebt >= 0.01 && iteration-- > 0) {
-      const monthRate = currentYearRate / getDaysInYear(currentYear) * getDaysInMonth(currentYear, currentMonth);
-      const mounthRateRought = currentYearRate / 12.0;
-      const tempRateK = Math.pow((1.0 + mounthRateRought), restPeriods);
-      const k = mounthRateRought * tempRateK / (tempRateK - 1.0);
-      var payment = currentDebt * k;
+      const daysInYear = getDaysInYear(currentYear);
+      const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+      const monthRate = currentYearRate / daysInYear * daysInMonth;
       const interest = currentDebt * monthRate;
+      var payment = currentMounthPayment;
       var retirement = payment - interest;
       if (currentDebt - retirement < 300) {
         payment = interest + currentDebt;
