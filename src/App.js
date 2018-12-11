@@ -1,21 +1,30 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { Grid, Paper, AppBar, Typography, Tabs, Tab, Zoom, Fab, withStyles } from '@material-ui/core';
+import { Grid, Paper, AppBar, Typography, Tabs, Tab, Zoom, Fab, withStyles, IconButton, NoSsr } from '@material-ui/core';
 import LoanTask from './LoanTask';
+import AddTab from './AddTab';
+import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
+import EditIcon from '@material-ui/icons/Edit';
+
 
 var objectHash = require('object-hash');
 var deepEqual = require('deep-equal');
 
 const styles = theme => ( {
   fab: {
-    position: 'absolute',
+    // position: 'absolute',
     bottom: theme.spacing.unit * 2,
     right: theme.spacing.unit * 2,
   },
-  tabs: {
+  tabPanel: {
     marginTop: 48
+  },
+  delButtonContainer: {
+    position: 'absolute',
+    right: theme.spacing.unit * 2,
+    top: 48
   }
 });
 
@@ -37,6 +46,7 @@ class App extends Component {
     this.handleBasePeriodsChange = this.handleBasePeriodsChange.bind(this);
     this.handleBaseLoanRateChange = this.handleBaseLoanRateChange.bind(this);
     this.handleAddLoanTask = this.handleAddLoanTask.bind(this);
+    this.handleRemoveLoanTask = this.handleRemoveLoanTask.bind(this);
 
     var pages = {};
     var pagesIds = [];
@@ -180,6 +190,24 @@ class App extends Component {
     });
   }
 
+  handleRemoveLoanTask() {
+    var pages = this.state.pages;
+    var pagesIds = this.state.pagesIds;
+    var activePageId = this.state.activePage;
+    var activeIndex = pagesIds.indexOf(activePageId);
+    var newPagesIds = pagesIds.filter((id) => id != activePageId);
+    pages[activePageId] = undefined;
+
+    activeIndex = activeIndex < 0 ? 0 : 
+    activeIndex > newPagesIds.length - 1 ? newPagesIds.length - 1 : activeIndex;
+
+    this.setState({
+      pages: pages,
+      pagesIds: newPagesIds,
+      activePage: newPagesIds[activeIndex]
+    });
+  }
+
   handleTabChange = (event, value) => {
     this.setState({
       activePage: value,
@@ -199,10 +227,10 @@ class App extends Component {
     localStorage.setItem("activePage", activePageId);
 
     const loanDesc = {
-      baseLoanRate: currentPage.baseLoanRate,
-      baseDate: currentPage.baseDate,
-      baseLoan: currentPage.baseLoan,
-      basePeriods: currentPage.basePeriods
+      baseLoanRate: currentPage ? currentPage.baseLoanRate : this.baseLoanRate, 
+      baseDate: currentPage ? currentPage.baseDate : this.baseDate,
+      baseLoan: currentPage ? currentPage.baseLoan : this.baseLoan,
+      basePeriods: currentPage ? currentPage.basePeriods : this.basePeriods
     };
     const loanKey = objectHash(loanDesc);
     const loanDeskKey = loanKey + '-desc';
@@ -230,22 +258,40 @@ class App extends Component {
                               baseLoanRate={currentPage.baseLoanRate}
                               onBaseLoanRateChange={this.handleBaseLoanRateChange}
                               payments={payments}/>;
-
+    
     return (
-      <div className="App">
-        <AppBar color="primary">
-          <Typography variant="h3" color="textPrimary">
-            Loan calculator
-          </Typography>
-        </AppBar>
-        <Tabs className={this.props.classes.tabs} value={this.state.activePage} onChange={this.handleTabChange}>
-          {tabList}
-        </Tabs>
-        {content}
-        <Fab>
-          <AddIcon onClick={this.handleAddLoanTask} />
-        </Fab>
-      </div>
+        <div className="App">
+          <AppBar color="primary">
+            <Typography variant="h3" color="textPrimary">
+              Loan calculator
+            </Typography>
+          </AppBar>
+
+          <Grid container direction="row" className={this.props.classes.tabPanel}>
+            <Grid item>
+              <Grid container direction="row">
+                <Grid item>
+                  <Tabs value={this.state.activePage} onChange={this.handleTabChange}>
+                    {tabList}
+                  </Tabs>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item>
+              <AddTab onClick={this.handleAddLoanTask}></AddTab>
+            </Grid>  {/* outer item */}
+            <Grid container direction="row">
+              <Grid item>
+                <div className={this.props.classes.delButtonContainer}>
+                  <IconButton onClick={this.handleRemoveLoanTask}>
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              </Grid> {/* button item */}
+            </Grid> {/* button container*/}
+          </Grid> {/* outer container */}
+          {content}
+        </div>
     );
   }
 }
