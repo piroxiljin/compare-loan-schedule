@@ -9,7 +9,6 @@ import { Grid, withStyles } from '@material-ui/core';
 const styles = theme => ({
   root: {
     flexGrow: 1,
-    marginTop: 16,
   },
   paper: {
     height: 140,

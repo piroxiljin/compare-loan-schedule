@@ -5,6 +5,9 @@ import ParamPanel from './ParamPanel';
 import PaymentTable  from './PaymentTable';
 
 const styles = theme => ({
+  root: {
+    marginTop: 16,
+  },
   tablePaper: {
     height: 700,
     overflowY: 'auto',
@@ -12,7 +15,7 @@ const styles = theme => ({
 });
 
 function LoanTask(props) {
-  return <Grid container spacing={16} justify="center">
+  return <Grid container spacing={16} justify="center" className={props.classes.root}>
     <Grid item>
       <Paper>
         <ParamPanel 
