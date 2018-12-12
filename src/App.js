@@ -7,6 +7,7 @@ import AddTab from './AddTab';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
+import RenameLoanDialog from './RenameLoanDialog';
 
 
 var objectHash = require('object-hash');
@@ -47,6 +48,9 @@ class App extends Component {
     this.handleBaseLoanRateChange = this.handleBaseLoanRateChange.bind(this);
     this.handleAddLoanTask = this.handleAddLoanTask.bind(this);
     this.handleRemoveLoanTask = this.handleRemoveLoanTask.bind(this);
+    this.handleRenameLoanClicked = this.handleRenameLoanClicked.bind(this);
+    this.handleRenameLoanCanceled = this.handleRenameLoanCanceled.bind(this);
+    this.handleRenameLoanAccepted = this.handleRenameLoanAccepted.bind(this);
 
     var pages = {};
     var pagesIds = [];
@@ -69,7 +73,8 @@ class App extends Component {
       baseDate: "2018-12",
       activePage: activePage || "",
       pages: pages || {},
-      pagesIds: pagesIds || []
+      pagesIds: pagesIds || [],
+      renameLoan: false
     };
   }
 
@@ -208,6 +213,31 @@ class App extends Component {
     });
   }
 
+  handleRenameLoanClicked() {
+    this.setState({
+      renameLoan: true
+    });
+  }
+
+  handleRenameLoanCanceled() {
+    this.setState({
+      renameLoan: false
+    });
+  }
+
+  handleRenameLoanAccepted(newName) {
+    var activePage = this.state.activePage;
+    var pages = this.state.pages;
+    var page = pages[activePage];
+    page.title = newName;
+
+    pages[activePage] = page;
+    this.setState({
+      pages: pages,
+      renameLoan: false
+    });
+  }
+
   handleTabChange = (event, value) => {
     this.setState({
       activePage: value,
@@ -227,6 +257,7 @@ class App extends Component {
     localStorage.setItem("activePage", activePageId);
 
     const loanDesc = {
+      title: currentPage ? currentPage.title : 'New loan', 
       baseLoanRate: currentPage ? currentPage.baseLoanRate : this.baseLoanRate, 
       baseDate: currentPage ? currentPage.baseDate : this.baseDate,
       baseLoan: currentPage ? currentPage.baseLoan : this.baseLoan,
@@ -283,6 +314,9 @@ class App extends Component {
             <Grid container direction="row">
               <Grid item>
                 <div className={this.props.classes.delButtonContainer}>
+                  <IconButton onClick={this.handleRenameLoanClicked}>
+                    <EditIcon />
+                  </IconButton>
                   <IconButton onClick={this.handleRemoveLoanTask}>
                     <DeleteIcon />
                   </IconButton>
@@ -291,6 +325,10 @@ class App extends Component {
             </Grid> {/* button container*/}
           </Grid> {/* outer container */}
           {content}
+          <RenameLoanDialog open={this.state.renameLoan}
+              oldName={loanDesc.title} 
+              onCancel={this.handleRenameLoanCanceled}
+              onAccept={this.handleRenameLoanAccepted} />
         </div>
     );
   }
