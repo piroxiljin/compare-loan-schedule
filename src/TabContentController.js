@@ -26,6 +26,7 @@ class TabContentController extends Component {
     this.handleRenameTabCancel = this.handleRenameTabCancel.bind(this);
     this.handleRenameTabAccept = this.handleRenameTabAccept.bind(this);
     this.handleNameChange = this.handleNameChange.bind(this);
+    this.handleTabDoubleClick = this.handleTabDoubleClick.bind(this);
 
     this.state = {
       renameTab: false,
@@ -42,6 +43,14 @@ class TabContentController extends Component {
   }
 
   handleRenameTabClick() {
+    const activePage = this.props.pages[this.props.activePage];
+    this.setState({
+      renameTab: true,
+      renameTabDraft: activePage.title
+    });
+  }
+
+  handleTabDoubleClick() {
     const activePage = this.props.pages[this.props.activePage];
     this.setState({
       renameTab: true,
@@ -74,7 +83,7 @@ class TabContentController extends Component {
     const activePage = this.props.pages[this.props.activePage];
 
     const tabList = this.props.pagesIds.map((pageId, index) => {
-      return <Tab label={this.props.pages[pageId].title} value={pageId} key={pageId}/>
+      return <Tab label={this.props.pages[pageId].title} value={pageId} key={pageId} onDoubleClick={this.handleTabDoubleClick}/>
     });
 
     return(
