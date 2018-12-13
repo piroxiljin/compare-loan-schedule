@@ -7,20 +7,14 @@ class RenameLoanDialog extends Component {
     super(props);
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleAccept = this.handleAccept.bind(this);
-
-    this.state = {
-      name: props.oldName
-    }
   }
 
   handleNameChange(e) {
-    this.setState( {
-      name: e.target.value
-    });
+    this.props.onNameChanged(e.target.value);
   }
 
   handleAccept = () => {
-    this.props.onAccept(this.state.name);
+    this.props.onAccept(this.props.name);
   }
 
   render() {
@@ -31,7 +25,7 @@ class RenameLoanDialog extends Component {
           <DialogTitle id="responsive-dialog-title">Rename current loan</DialogTitle>
           <DialogContent>
             <DialogContentText>Pleace, enter new name for this loan</DialogContentText>
-            <TextField autofocus margin="dense" label="loan name" fullWidth value={this.state.name} onChange={this.handleNameChange}/>
+            <TextField autoFocus margin="dense" label="loan name" fullWidth value={this.props.name} onChange={this.handleNameChange}/>
           </DialogContent>
           <DialogActions>
             <Button onClick={this.props.onCancel} color="primary">Cancel</Button>

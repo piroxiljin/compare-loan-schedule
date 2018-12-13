@@ -3,30 +3,15 @@ import logo from './logo.svg';
 import './App.css';
 import { Grid, Paper, AppBar, Typography, Tabs, Tab, Zoom, Fab, withStyles, IconButton, NoSsr } from '@material-ui/core';
 import LoanTask from './LoanTask';
-import AddTab from './AddTab';
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddIcon from '@material-ui/icons/Add';
-import EditIcon from '@material-ui/icons/Edit';
 import RenameLoanDialog from './RenameLoanDialog';
+import TabContentController from './TabContentController';
 
 
 var objectHash = require('object-hash');
 var deepEqual = require('deep-equal');
 
 const styles = theme => ( {
-  fab: {
-    // position: 'absolute',
-    bottom: theme.spacing.unit * 2,
-    right: theme.spacing.unit * 2,
-  },
-  tabPanel: {
-    marginTop: 48
-  },
-  delButtonContainer: {
-    position: 'absolute',
-    right: theme.spacing.unit * 2,
-    top: 48
-  }
+  
 });
 
 function uniqueID(){
@@ -48,9 +33,7 @@ class App extends Component {
     this.handleBaseLoanRateChange = this.handleBaseLoanRateChange.bind(this);
     this.handleAddLoanTask = this.handleAddLoanTask.bind(this);
     this.handleRemoveLoanTask = this.handleRemoveLoanTask.bind(this);
-    this.handleRenameLoanClicked = this.handleRenameLoanClicked.bind(this);
-    this.handleRenameLoanCanceled = this.handleRenameLoanCanceled.bind(this);
-    this.handleRenameLoanAccepted = this.handleRenameLoanAccepted.bind(this);
+    this.handleRenameLoan = this.handleRenameLoan.bind(this);
 
     var pages = {};
     var pagesIds = [];
@@ -213,19 +196,7 @@ class App extends Component {
     });
   }
 
-  handleRenameLoanClicked() {
-    this.setState({
-      renameLoan: true
-    });
-  }
-
-  handleRenameLoanCanceled() {
-    this.setState({
-      renameLoan: false
-    });
-  }
-
-  handleRenameLoanAccepted(newName) {
+  handleRenameLoan(newName) {
     var activePage = this.state.activePage;
     var pages = this.state.pages;
     var page = pages[activePage];
@@ -234,11 +205,10 @@ class App extends Component {
     pages[activePage] = page;
     this.setState({
       pages: pages,
-      renameLoan: false
     });
   }
 
-  handleTabChange = (event, value) => {
+  handleTabChange = (value) => {
     this.setState({
       activePage: value,
     });
@@ -277,10 +247,6 @@ class App extends Component {
       sessionStorage.setItem(loanDeskKey, JSON.stringify(loanDesc));
       sessionStorage.setItem(loanKey, JSON.stringify(payments));
     }
-
-    const tabList = this.state.pagesIds.map((pageId, index) => {
-      return <Tab label={this.state.pages[pageId].title} value={pageId} key={pageId}/>
-    });
     
     const content = currentPage && <LoanTask baseLoan={currentPage.baseLoan} 
                               onBaseLoanChange={this.handleBaseLoanChange}
@@ -297,38 +263,13 @@ class App extends Component {
               Loan calculator
             </Typography>
           </AppBar>
-
-          <Grid container direction="row" className={this.props.classes.tabPanel}>
-            <Grid item>
-              <Grid container direction="row">
-                <Grid item>
-                  <Tabs value={this.state.activePage} onChange={this.handleTabChange}>
-                    {tabList}
-                  </Tabs>
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item>
-              <AddTab onClick={this.handleAddLoanTask}></AddTab>
-            </Grid>  {/* outer item */}
-            <Grid container direction="row">
-              <Grid item>
-                <div className={this.props.classes.delButtonContainer}>
-                  <IconButton onClick={this.handleRenameLoanClicked}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={this.handleRemoveLoanTask}>
-                    <DeleteIcon />
-                  </IconButton>
-                </div>
-              </Grid> {/* button item */}
-            </Grid> {/* button container*/}
-          </Grid> {/* outer container */}
+          <TabContentController pagesIds={this.state.pagesIds}
+            pages={this.state.pages} activePage={this.state.activePage}
+            onTabChange={this.handleTabChange}
+            onRenameTab={this.handleRenameLoan} 
+            onAddTabClicked={this.handleAddLoanTask}
+            onDeleteTabClicked={this.handleRemoveLoanTask} />
           {content}
-          <RenameLoanDialog open={this.state.renameLoan}
-              oldName={loanDesc.title} 
-              onCancel={this.handleRenameLoanCanceled}
-              onAccept={this.handleRenameLoanAccepted} />
         </div>
     );
   }
