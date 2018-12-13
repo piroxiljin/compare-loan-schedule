@@ -6,6 +6,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
 import RenameLoanDialog from './RenameLoanDialog';
+import ConfirmDialog from './ConfirmDialog';
 
 const styles = theme => ( {
   tabPanel: {
@@ -27,10 +28,14 @@ class TabContentController extends Component {
     this.handleRenameTabAccept = this.handleRenameTabAccept.bind(this);
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleTabDoubleClick = this.handleTabDoubleClick.bind(this);
+    this.handleDeleteTabClicked = this.handleDeleteTabClicked.bind(this);
+    this.handleDeleteCancel = this.handleDeleteCancel.bind(this);
+    this.handleDeleteAccept = this.handleDeleteAccept.bind(this);
 
     this.state = {
       renameTab: false,
-      renameTabDraft: ""
+      renameTabDraft: "",
+      askDelete: false
     }
   }
 
@@ -79,6 +84,25 @@ class TabContentController extends Component {
     });
   }
 
+  handleDeleteTabClicked() {
+    this.setState({
+      askDelete: true
+    });
+  }
+
+  handleDeleteCancel() {
+    this.setState({
+      askDelete: false
+    });
+  }
+
+  handleDeleteAccept() {
+    this.setState({
+      askDelete: false
+    });
+    this.props.onDeleteTabClicked();
+  }
+
   render() {
     const activePage = this.props.pages[this.props.activePage];
 
@@ -107,7 +131,7 @@ class TabContentController extends Component {
               <IconButton onClick={this.handleRenameTabClick}>
                 <EditIcon />
               </IconButton>
-              <IconButton onClick={this.props.onDeleteTabClicked}>
+              <IconButton onClick={this.handleDeleteTabClicked}>
                 <DeleteIcon />
               </IconButton>
             </div>
@@ -119,6 +143,10 @@ class TabContentController extends Component {
         onCancel={this.handleRenameTabCancel}
         onAccept={this.handleRenameTabAccept} 
         onNameChanged={this.handleNameChange}/>
+      <ConfirmDialog open={this.state.askDelete} 
+        name={activePage ? activePage.title : ""} 
+        onCancel={this.handleDeleteCancel}
+        onAccept={this.handleDeleteAccept}/>
     </>
     )
   } 
