@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "dependencies": {
-    "@material-ui/core": "^3.6.1",
+    "@material-ui/core": "^3.7.0",
     "@material-ui/icons": "^3.0.1",
     "dateformat": "^3.0.3",
     "deep-equal": "^1.0.1",
