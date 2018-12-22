@@ -5,6 +5,7 @@ import { Grid, Paper, AppBar, Typography, Tabs, Tab, Zoom, Fab, withStyles, Icon
 import LoanTask from './LoanTask';
 import RenameLoanDialog from './RenameLoanDialog';
 import TabContentController from './TabContentController';
+import { calculateSchedule } from './loanUtils';
 
 
 var objectHash = require('object-hash');
@@ -34,6 +35,7 @@ class App extends Component {
     this.handleAddLoanTask = this.handleAddLoanTask.bind(this);
     this.handleRemoveLoanTask = this.handleRemoveLoanTask.bind(this);
     this.handleRenameLoan = this.handleRenameLoan.bind(this);
+    this.updateContent = this.updateContent.bind(this);
 
     var pages = {};
     var pagesIds = [];
@@ -47,6 +49,14 @@ class App extends Component {
       pagesIds = restoredPagesIds;
       activePage = restoredActivePage;
     } catch(e) {
+      console.log("catch while parse stored items: " + e.what());
+      pages = {};
+      pagesIds = [];
+      activePage = "";
+    }
+
+    if (pages[activePage] === undefined && pagesIds.length > 0) {
+      activePage = pagesIds[0];
     }
 
     this.state = {
@@ -61,6 +71,10 @@ class App extends Component {
     };
   }
 
+  componentDidMount() {
+    this.updateContent();
+  }
+
   handleBaseLoanChange(e) {
     var pages = this.state.pages;
     var activePageId = this.state.activePage;
@@ -69,10 +83,13 @@ class App extends Component {
     if (! isNaN(e.target.value)) {
       currentPage["baseLoan"] = e.target.value;
     }
+    currentPage.isReady = false;
     pages[activePageId] = currentPage;
     this.setState({
       pages: pages
     });
+
+    this.updateContent();
   }
 
   handleBasePeriodsChange(e) {
@@ -83,10 +100,14 @@ class App extends Component {
     if (! isNaN(e.target.value)) {
       currentPage["basePeriods"] = e.target.value;
     }
+    currentPage.isReady = false;
+
     pages[activePageId] = currentPage;
     this.setState({
       pages: pages
     });
+
+    this.updateContent();
   }
 
   handleBaseLoanRateChange(e) {
@@ -97,66 +118,14 @@ class App extends Component {
     if (! isNaN(e.target.value)) {
       currentPage["baseLoanRate"] = e.target.value;
     }
+    currentPage.isReady = false;
+
     pages[activePageId] = currentPage;
     this.setState({
       pages: pages
     });
-  }
 
-  calculateSchedule(loanParams) {
-    var payments = [];
-    const currentYearRate = loanParams.baseLoanRate;
-    var currentDebt = loanParams.baseLoan;
-    var restPeriods = loanParams.basePeriods * 12;
-    var iteration = 200;
-    var currentYear = new Date(loanParams.baseDate).getYear() + 1900;
-    var currentMonth = new Date(loanParams.baseDate).getMonth();
-
-    var currentMounthRateRought = currentYearRate / 12.0;
-    var currentTempRateK = Math.pow((1.0 + currentMounthRateRought), restPeriods);
-    var currentK = currentMounthRateRought * currentTempRateK / (currentTempRateK - 1.0);
-    var currentMounthPayment = currentDebt * currentK;
-
-    var dayOfYears = [366, 365, 365, 365];
-    var getDaysInYear = (year) => dayOfYears[year % 4];
-    var getDaysInMonth = function(year, month) {
-      // day = 0 - returns amount of days in previous mounth
-      return new Date(year, month+1, 0).getDate();
-    };
-
-    while (currentDebt >= 0.01 && iteration-- > 0) {
-      const daysInYear = getDaysInYear(currentYear);
-      const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-      const monthRate = currentYearRate / daysInYear * daysInMonth;
-      const interest = currentDebt * monthRate;
-      var payment = currentMounthPayment;
-      var retirement = payment - interest;
-      if (currentDebt - retirement < 300) {
-        payment = interest + currentDebt;
-        retirement = currentDebt;
-      }
-      console.log(payments.length + ". " 
-        + currentDebt + ": " 
-        + interest + " + " 
-        + retirement + " = "
-        + payment);
-      payments.push({
-        currentDebt: currentDebt,
-        periodDate: currentYear + "-" + (currentMonth+1),
-        payment: payment,
-        interest: interest,
-        retirement: retirement
-      });
-      
-      currentMonth += 1;
-      if (currentMonth >= 12) {
-        currentMonth = currentMonth % 12;
-        currentYear += 1;
-      }
-      currentDebt -= retirement;
-      restPeriods -= 1;
-    }
-    return payments;
+    this.updateContent();
   }
 
   handleAddLoanTask() {
@@ -170,12 +139,15 @@ class App extends Component {
       baseDate: this.state.baseDate,
       baseLoan: this.state.baseLoan,
       basePeriods: this.state.basePeriods,
+      isReady: false,
     };
     this.setState({
       pages: pages,
       pagesIds: pagesIds,
       activePage: newId,
     });
+
+    this.updateContent();
   }
 
   handleRemoveLoanTask() {
@@ -194,6 +166,8 @@ class App extends Component {
       pagesIds: newPagesIds,
       activePage: newPagesIds[activeIndex]
     });
+
+    this.updateContent();
   }
 
   handleRenameLoan(newName) {
@@ -206,11 +180,82 @@ class App extends Component {
     this.setState({
       pages: pages,
     });
+    
+    this.updateContent();
   }
 
   handleTabChange = (value) => {
     this.setState({
       activePage: value,
+    });
+
+    this.updateContent();
+  }
+
+  preparePayments(loanDesc) {
+    //const loanKey = objectHash(loanDesc);
+    //const loanDeskKey = loanKey + '-desc';
+    //var storedLoanDesc = JSON.parse(sessionStorage.getItem(loanDeskKey) );
+
+    var payments;
+    //if (storedLoanDesc && deepEqual(loanDesc, storedLoanDesc)) {
+      //payments = JSON.parse(sessionStorage.getItem(loanKey));
+    //}
+
+    //if (!payments) {
+      payments = calculateSchedule(loanDesc);
+      //sessionStorage.setItem(loanDeskKey, JSON.stringify(loanDesc));
+      //sessionStorage.setItem(loanKey, JSON.stringify(payments));
+    //}
+    return payments;
+  }
+
+  updateContent() {
+    this.setState((state, props) => {
+      var pages = state.pages;
+      var pagesIds = state.pagesIds;
+      var activePageId = state.activePage;
+      var currentPage = pages[activePageId];
+
+      var pagesStr = JSON.stringify(pages);
+      localStorage.setItem("pages", pagesStr);
+      var idsStr = JSON.stringify(pagesIds);
+      localStorage.setItem("pagesIds", idsStr);
+      localStorage.setItem("activePage", activePageId);
+
+      const loanDesc = {
+        title: currentPage ? currentPage.title : 'New loan', 
+        baseLoanRate: currentPage ? currentPage.baseLoanRate : state.baseLoanRate, 
+        baseDate: currentPage ? currentPage.baseDate : state.baseDate,
+        baseLoan: currentPage ? currentPage.baseLoan : state.baseLoan,
+        basePeriods: currentPage ? currentPage.basePeriods : state.basePeriods
+      };
+
+      var payments = this.preparePayments(loanDesc);
+      // paymentsPromise.then((function() {
+      //   const localPageId = activePageId;
+      //   return function(payments) {
+      //     this.setState((state, props) => {
+      //       var currentPage = state.pages[localPageId];
+      
+      //       currentPage.isReady = true;
+      //       currentPage.payments = payments;
+      //       pages[activePageId] = currentPage;
+      //       return {
+      //         pages: pages
+      //       }
+      //     });
+      //   }
+      // })().bind(this), function() {
+      //   console.log("Payment promise rejected");
+      // });
+      //currentPage.paymentsPromise = paymentsPromise;
+      currentPage.payments = payments;
+      currentPage.isReady = true;
+      pages[activePageId] = currentPage;
+      return {
+        pages: pages
+      }
     });
   }
 
@@ -220,33 +265,8 @@ class App extends Component {
     var activePageId = this.state.activePage;
     var currentPage = pages[activePageId];
 
-    var pagesStr = JSON.stringify(pages);
-    localStorage.setItem("pages", pagesStr);
-    var idsStr = JSON.stringify(pagesIds);
-    localStorage.setItem("pagesIds", idsStr);
-    localStorage.setItem("activePage", activePageId);
-
-    const loanDesc = {
-      title: currentPage ? currentPage.title : 'New loan', 
-      baseLoanRate: currentPage ? currentPage.baseLoanRate : this.baseLoanRate, 
-      baseDate: currentPage ? currentPage.baseDate : this.baseDate,
-      baseLoan: currentPage ? currentPage.baseLoan : this.baseLoan,
-      basePeriods: currentPage ? currentPage.basePeriods : this.basePeriods
-    };
-    const loanKey = objectHash(loanDesc);
-    const loanDeskKey = loanKey + '-desc';
-    var storedLoanDesc = JSON.parse(sessionStorage.getItem(loanDeskKey) );
-
-    var payments
-    if (storedLoanDesc && deepEqual(loanDesc, storedLoanDesc)) {
-      payments = JSON.parse(sessionStorage.getItem(loanKey));
-    }
-
-    if (!payments) {
-      payments = currentPage && this.calculateSchedule(loanDesc);
-      sessionStorage.setItem(loanDeskKey, JSON.stringify(loanDesc));
-      sessionStorage.setItem(loanKey, JSON.stringify(payments));
-    }
+    const payments = currentPage && currentPage.payments;
+    const contentIsReady = currentPage && currentPage.isReady;
     
     const content = currentPage && <LoanTask baseLoan={currentPage.baseLoan} 
                               onBaseLoanChange={this.handleBaseLoanChange}
@@ -254,7 +274,7 @@ class App extends Component {
                               onBasePeriodsChange={this.handleBasePeriodsChange}
                               baseLoanRate={currentPage.baseLoanRate}
                               onBaseLoanRateChange={this.handleBaseLoanRateChange}
-                              payments={payments}/>;
+                              isReady={contentIsReady} payments={payments}/>;
     
     return (
         <div className="App">
@@ -264,7 +284,8 @@ class App extends Component {
             </Typography>
           </AppBar>
           <TabContentController pagesIds={this.state.pagesIds}
-            pages={this.state.pages} activePage={this.state.activePage}
+            pages={this.state.pages} 
+            activePage={this.state.activePage}
             onTabChange={this.handleTabChange}
             onRenameTab={this.handleRenameLoan} 
             onAddTabClicked={this.handleAddLoanTask}

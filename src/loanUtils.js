@@ -1,0 +1,55 @@
+export function calculateSchedule(loanParams) {
+    var payments = [];
+    const currentYearRate = loanParams.baseLoanRate;
+    var currentDebt = loanParams.baseLoan;
+    var restPeriods = loanParams.basePeriods * 12;
+    var iteration = 200;
+    var currentYear = new Date(loanParams.baseDate).getYear() + 1900;
+    var currentMonth = new Date(loanParams.baseDate).getMonth();
+
+    var currentMounthRateRought = currentYearRate / 12.0;
+    var currentTempRateK = Math.pow((1.0 + currentMounthRateRought), restPeriods);
+    var currentK = currentMounthRateRought * currentTempRateK / (currentTempRateK - 1.0);
+    var currentMounthPayment = currentDebt * currentK;
+
+    var dayOfYears = [366, 365, 365, 365];
+    var getDaysInYear = (year) => dayOfYears[year % 4];
+    var getDaysInMonth = function(year, month) {
+      // day = 0 - returns amount of days in previous mounth
+      return new Date(year, month+1, 0).getDate();
+    };
+
+    while (currentDebt >= 0.01 && iteration-- > 0) {
+      const daysInYear = getDaysInYear(currentYear);
+      const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+      const monthRate = currentYearRate / daysInYear * daysInMonth;
+      const interest = currentDebt * monthRate;
+      var payment = currentMounthPayment;
+      var retirement = payment - interest;
+      if (currentDebt - retirement < 300) {
+        payment = interest + currentDebt;
+        retirement = currentDebt;
+      }
+      // console.log(payments.length + ". " 
+      //   + currentDebt + ": " 
+      //   + interest + " + " 
+      //   + retirement + " = "
+      //   + payment);
+      payments.push({
+        currentDebt: currentDebt,
+        periodDate: currentYear + "-" + (currentMonth+1),
+        payment: payment,
+        interest: interest,
+        retirement: retirement
+      });
+      
+      currentMonth += 1;
+      if (currentMonth >= 12) {
+        currentMonth = currentMonth % 12;
+        currentYear += 1;
+      }
+      currentDebt -= retirement;
+      restPeriods -= 1;
+    }
+    return payments;
+  }
