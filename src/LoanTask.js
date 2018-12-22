@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Paper, AppBar, Typography, Tabs, Tab, withStyles } from '@material-ui/core';
+import { Grid, Paper, AppBar, Typography, Tabs, Tab, withStyles, CircularProgress } from '@material-ui/core';
 import ParamPanel from './ParamPanel';
 import PaymentTable  from './PaymentTable';
 
@@ -15,6 +15,7 @@ const styles = theme => ({
 });
 
 function LoanTask(props) {
+  const loader = <CircularProgress />
   return <Grid container spacing={16} justify="center" className={props.classes.root}>
     <Grid item>
       <Paper>
@@ -28,11 +29,13 @@ function LoanTask(props) {
           />
       </Paper>
     </Grid>
-    <Grid item>
-      <Paper className={props.classes.tablePaper}>
-        <PaymentTable payments={props.payments} />
-      </Paper>
-    </Grid>
+    {(props.isReady 
+      && <Grid item>
+        <Paper className={props.classes.tablePaper}>
+          <PaymentTable payments={props.payments}/>
+        </Paper>
+      </Grid>) 
+    || <Grid item>{loader}</Grid> }
   </Grid>;
 }
 
