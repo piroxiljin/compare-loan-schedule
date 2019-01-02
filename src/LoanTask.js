@@ -18,7 +18,7 @@ const styles = theme => ({
 
 function LoanTask(props) {
   const loader = <CircularProgress />
-  return <Grid container spacing={16} justify="center" className={props.classes.root}>
+  return <Grid container spacing={16} justify="center" >
     <Grid item>
       <Paper>
         <ParamPanel 

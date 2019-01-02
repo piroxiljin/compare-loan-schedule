@@ -12,7 +12,16 @@ var objectHash = require('object-hash');
 var deepEqual = require('deep-equal');
 
 const styles = theme => ( {
-  
+  app: {
+    display: "flex",
+    flexFlow: "column",
+    height: "100vh"
+  },
+  taskContent: {
+    flex: 1,
+    marginTop: 16,
+    overflowY: 'auto',
+  }
 });
 
 function uniqueID(){
@@ -286,7 +295,9 @@ class App extends Component {
     const payments = currentPage && currentPage.payments;
     const contentIsReady = currentPage && currentPage.isReady;
     
-    const content = currentPage && <LoanTask baseLoan={currentPage.baseLoan} 
+    const content = currentPage && <div className={this.props.classes.taskContent}>
+                            <LoanTask
+                              baseLoan={currentPage.baseLoan} 
                               onBaseLoanChange={this.handleBaseLoanChange}
                               basePeriods={currentPage.basePeriods}
                               onBasePeriodsChange={this.handleBasePeriodsChange}
@@ -296,12 +307,13 @@ class App extends Component {
                               onIssueDateChange={this.handleIssueDateChange}
                               isReady={contentIsReady} payments={payments}
                               baseMounthPayment={currentPage.baseMounthPayment}
-                              interestsOverall={currentPage.interestsOverall} />;
+                              interestsOverall={currentPage.interestsOverall} /> 
+                          </div>;
     
     return (
-        <div className="App">
+        <div className={this.props.classes.app}>
           <AppBar color="primary">
-            <Typography variant="h3" color="textPrimary">
+            <Typography variant="h3" color="textPrimary" align="center">
               Loan calculator
             </Typography>
           </AppBar>
