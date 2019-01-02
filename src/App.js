@@ -275,7 +275,9 @@ class App extends Component {
                               onBasePeriodsChange={this.handleBasePeriodsChange}
                               baseLoanRate={currentPage.baseLoanRate}
                               onBaseLoanRateChange={this.handleBaseLoanRateChange}
-                              isReady={contentIsReady} payments={payments}/>;
+                              isReady={contentIsReady} payments={payments}
+                              baseMounthPayment={currentPage.baseMounthPayment}
+                              interestsOverall={currentPage.interestsOverall} />;
     
     return (
         <div className="App">
