@@ -29,7 +29,7 @@ function PaymentTable(props) {
   const listItems = props.payments.map((item, index) => 
     <TableRow key={index.toString()}>
       <TableCell>{index+1}.</TableCell>
-      <TableCell>{dateFormat(new Date(item.periodDate), "yyyy.mm")}</TableCell>
+      <TableCell>{dateFormat(new Date(item.periodDate), "mm.yyyy")}</TableCell>
       <TableCell className={props.classes.currencyCell}>{moneyFormat(item.currentDebt)}</TableCell>
       <TableCell className={props.classes.currencyCell}>{moneyFormat(item.payment)}</TableCell>
       <TableCell className={props.classes.currencyCell}>{moneyFormat(item.interest)}</TableCell>
@@ -40,7 +40,7 @@ function PaymentTable(props) {
     <TableHead>
       <TableRow>
         <TableCell>Period</TableCell>
-        <TableCell>Date</TableCell>
+        <TableCell>Payment date</TableCell>
         <TableCell>Loan amount</TableCell>
         <TableCell>Minimal payment</TableCell>
         <TableCell>Interests</TableCell>

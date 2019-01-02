@@ -28,6 +28,7 @@ export function calculateSchedule(loanParams) {
       const daysInMonth = getDaysInMonth(currentYear, currentMonth);
       const monthRate = currentYearRate / daysInYear * daysInMonth;
       const interest = currentDebt * monthRate;
+      const paymentDate = (currentMonth + 1) % 12;
       var payment = currentMounthPayment;
       var retirement = payment - interest;
       if (currentDebt - retirement < 300) {
@@ -41,7 +42,7 @@ export function calculateSchedule(loanParams) {
       //   + payment);
       payments.push({
         currentDebt: currentDebt,
-        periodDate: currentYear + "-" + (currentMonth+1),
+        periodDate: currentYear + "-" + (paymentDate+1), // [0 .. 11] => [1 .. 12]
         payment: payment,
         interest: interest,
         retirement: retirement
