@@ -231,7 +231,7 @@ class App extends Component {
         basePeriods: currentPage ? currentPage.basePeriods : state.basePeriods
       };
 
-      var payments = this.preparePayments(loanDesc);
+      var calcResults = this.preparePayments(loanDesc);
       // paymentsPromise.then((function() {
       //   const localPageId = activePageId;
       //   return function(payments) {
@@ -249,8 +249,9 @@ class App extends Component {
       // })().bind(this), function() {
       //   console.log("Payment promise rejected");
       // });
-      //currentPage.paymentsPromise = paymentsPromise;
-      currentPage.payments = payments;
+      currentPage.payments = calcResults.payments;
+      currentPage.baseMounthPayment = calcResults.baseMounthPayment;
+      currentPage.interestsOverall = calcResults.interestsOverall;
       currentPage.isReady = true;
       pages[activePageId] = currentPage;
       return {
