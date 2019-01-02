@@ -32,6 +32,7 @@ class App extends Component {
     this.handleBaseLoanChange = this.handleBaseLoanChange.bind(this);
     this.handleBasePeriodsChange = this.handleBasePeriodsChange.bind(this);
     this.handleBaseLoanRateChange = this.handleBaseLoanRateChange.bind(this);
+    this.handleIssueDateChange = this.handleIssueDateChange.bind(this);
     this.handleAddLoanTask = this.handleAddLoanTask.bind(this);
     this.handleRemoveLoanTask = this.handleRemoveLoanTask.bind(this);
     this.handleRenameLoan = this.handleRenameLoan.bind(this);
@@ -63,7 +64,7 @@ class App extends Component {
       baseLoan: 1000000,
       basePeriods: 1,
       baseLoanRate: 0.10,
-      baseDate: "2018-12",
+      issueDate: new Date().toString(),
       activePage: activePage || "",
       pages: pages || {},
       pagesIds: pagesIds || [],
@@ -128,6 +129,22 @@ class App extends Component {
     this.updateContent();
   }
 
+  handleIssueDateChange(e) {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+
+    currentPage["issueDate"] = e.target.value;
+    currentPage.isReady = false;
+
+    pages[activePageId] = currentPage;
+    this.setState({
+      pages: pages
+    });
+
+    this.updateContent();
+  }
+
   handleAddLoanTask() {
     var pages = this.state.pages;
     var pagesIds = this.state.pagesIds;
@@ -136,7 +153,7 @@ class App extends Component {
     pagesIds.push(newId);
     pages[newId] = {title: "new loan", id: newId,
       baseLoanRate: this.state.baseLoanRate,
-      baseDate: this.state.baseDate,
+      issueDate: this.state.issueDate,
       baseLoan: this.state.baseLoan,
       basePeriods: this.state.basePeriods,
       isReady: false,
@@ -226,7 +243,7 @@ class App extends Component {
       const loanDesc = {
         title: currentPage ? currentPage.title : 'New loan', 
         baseLoanRate: currentPage ? currentPage.baseLoanRate : state.baseLoanRate, 
-        baseDate: currentPage ? currentPage.baseDate : state.baseDate,
+        issueDate: currentPage ? currentPage.issueDate : state.issueDate,
         baseLoan: currentPage ? currentPage.baseLoan : state.baseLoan,
         basePeriods: currentPage ? currentPage.basePeriods : state.basePeriods
       };
@@ -275,6 +292,8 @@ class App extends Component {
                               onBasePeriodsChange={this.handleBasePeriodsChange}
                               baseLoanRate={currentPage.baseLoanRate}
                               onBaseLoanRateChange={this.handleBaseLoanRateChange}
+                              issueDate={currentPage.issueDate}
+                              onIssueDateChange={this.handleIssueDateChange}
                               isReady={contentIsReady} payments={payments}
                               baseMounthPayment={currentPage.baseMounthPayment}
                               interestsOverall={currentPage.interestsOverall} />;

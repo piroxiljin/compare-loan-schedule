@@ -27,6 +27,8 @@ function LoanTask(props) {
           onBasePeriodsChange={props.onBasePeriodsChange}
           baseLoanRate={props.baseLoanRate}
           onBaseLoanRateChange={props.onBaseLoanRateChange}
+          issueDate={props.issueDate}
+          onIssueDateChange={props.onIssueDateChange}
           />
       </Paper>
     </Grid>

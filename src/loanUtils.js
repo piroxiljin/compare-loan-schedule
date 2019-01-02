@@ -4,8 +4,10 @@ export function calculateSchedule(loanParams) {
     var currentDebt = loanParams.baseLoan;
     var restPeriods = loanParams.basePeriods * 12;
     var iteration = 200;
-    var currentYear = new Date(loanParams.baseDate).getYear() + 1900;
-    var currentMonth = new Date(loanParams.baseDate).getMonth();
+    console.assert(loanParams.issueDate, "issue date was not specified");
+    const issueDate = loanParams.issueDate || new Date().toDateString();
+    var currentYear = new Date(issueDate).getYear() + 1900;
+    var currentMonth = new Date(issueDate).getMonth();
 
     var currentMounthRateRought = currentYearRate / 12.0;
     var currentTempRateK = Math.pow((1.0 + currentMounthRateRought), restPeriods);
