@@ -14,6 +14,7 @@ export function calculateSchedule(loanParams) {
     var currentK = currentMounthRateRought * currentTempRateK / (currentTempRateK - 1.0);
     var currentMounthPayment = currentDebt * currentK;
     const baseMounthPayment = currentMounthPayment;
+    var currentPaymentNumber = 1;
 
     var dayOfYears = [366, 365, 365, 365];
     var getDaysInYear = (year) => dayOfYears[year % 4];
@@ -43,12 +44,14 @@ export function calculateSchedule(loanParams) {
       payments.push({
         currentDebt: currentDebt,
         periodDate: currentYear + "-" + (paymentDate+1), // [0 .. 11] => [1 .. 12]
+        paymentNumber: currentPaymentNumber,
         payment: payment,
         interest: interest,
         retirement: retirement
       });
       interestsOverall += interest;
       
+      currentPaymentNumber += 1;
       currentMonth += 1;
       if (currentMonth >= 12) {
         currentMonth = currentMonth % 12;
