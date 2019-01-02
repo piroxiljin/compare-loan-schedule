@@ -4,6 +4,7 @@ import { Grid, Paper, AppBar, Typography, Tabs, Tab, withStyles, CircularProgres
 import ParamPanel from './ParamPanel';
 import PaymentTable  from './PaymentTable';
 import OverallInfo from './OverallInfo';
+import PaymentGraph from './PaymentGraph';
 
 const styles = theme => ({
   root: {
@@ -17,7 +18,7 @@ const styles = theme => ({
 
 function LoanTask(props) {
   const loader = <CircularProgress />
-  return <Grid container spacing={16} justify="center" className={props.classes.root}>
+  return <Grid container spacing={16} justify="center" >
     <Grid item>
       <Paper>
         <ParamPanel 
@@ -44,6 +45,11 @@ function LoanTask(props) {
                       baseMounthPayment={props.baseMounthPayment}
                       interestsOverall={props.interestsOverall}
                       baseLoan={props.baseLoan} />
+        </Paper>
+      </Grid>
+      <Grid>
+        <Paper>
+          <PaymentGraph data={props.payments}/>
         </Paper>
       </Grid> </>
       ) 
