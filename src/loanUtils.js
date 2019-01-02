@@ -1,8 +1,8 @@
 export function calculateSchedule(loanParams) {
     var payments = [];
-    const currentYearRate = loanParams.baseLoanRate;
-    var currentDebt = loanParams.baseLoan;
-    var restPeriods = loanParams.basePeriods * 12;
+    const currentYearRate = parseFloat(loanParams.baseLoanRate);
+    var currentDebt = parseFloat(loanParams.baseLoan);
+    var restPeriods = parseFloat(loanParams.basePeriods) * 12;
     var iteration = 200;
     console.assert(loanParams.issueDate, "issue date was not specified");
     const issueDate = loanParams.issueDate || new Date().toDateString();
@@ -42,7 +42,7 @@ export function calculateSchedule(loanParams) {
       //   + retirement + " = "
       //   + payment);
       payments.push({
-        currentDebt: currentDebt,
+        currentDebt: parseFloat(currentDebt),
         periodDate: currentYear + "-" + (paymentDate+1), // [0 .. 11] => [1 .. 12]
         paymentNumber: currentPaymentNumber,
         payment: payment,
