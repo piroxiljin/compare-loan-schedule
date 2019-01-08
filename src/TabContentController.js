@@ -107,7 +107,7 @@ class TabContentController extends Component {
     const activePage = this.props.pages[this.props.activePage];
 
     const tabList = this.props.pagesIds.map((pageId, index) => {
-      return <Tab label={this.props.pages[pageId].title} value={pageId} key={pageId} onDoubleClick={this.handleTabDoubleClick}/>
+      return <Tab label={this.props.pages && this.props.pages[pageId] && this.props.pages[pageId].title} value={pageId} key={pageId} onDoubleClick={this.handleTabDoubleClick}/>
     });
 
     return(

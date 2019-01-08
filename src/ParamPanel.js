@@ -45,6 +45,14 @@ function ParamPanel(props) {
             onChange={props.onBaseLoanRateChange} />
         </FormControl>
       </Grid>
+      <Grid item>
+        <FormControl>
+          <InputLabel>Issue date</InputLabel>
+          <Input value={props.issueDate}
+            type="date"
+            onChange={props.onIssueDateChange} />
+        </FormControl>
+      </Grid>
     </Grid>
 }
 
