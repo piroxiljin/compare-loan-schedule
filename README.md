@@ -6,6 +6,8 @@
 
 Yet another loan calculator. This version allows to compare several loans with different interest rate and loan term.
 
+Working instance might be checked on github pages: https://piroxiljin.github.io/compare-loan-schedule/
+
 [//]: # (Сумма ежемесячного платежа определяется по формуле)
 
 Amount of montly payment is defined as
