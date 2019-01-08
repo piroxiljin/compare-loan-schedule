@@ -10,6 +10,7 @@ import { calculateSchedule } from './loanUtils';
 
 var objectHash = require('object-hash');
 var deepEqual = require('deep-equal');
+var dateFormat = require('dateformat');
 
 const styles = theme => ( {
   app: {
@@ -55,9 +56,9 @@ class App extends Component {
       var restoredPages = JSON.parse(localStorage.getItem("pages") );
       var restoredPagesIds = JSON.parse(localStorage.getItem("pagesIds") );
       var restoredActivePage = localStorage.getItem("activePage");
-      pages = restoredPages;
-      pagesIds = restoredPagesIds;
-      activePage = restoredActivePage;
+      pages = restoredPages || pages;
+      pagesIds = restoredPagesIds || pagesIds;
+      activePage = restoredActivePage || activePage;
     } catch(e) {
       console.log("catch while parse stored items: " + e.what());
       pages = {};
@@ -73,7 +74,7 @@ class App extends Component {
       baseLoan: 1000000,
       basePeriods: 1,
       baseLoanRate: 0.10,
-      issueDate: new Date().toString(),
+      issueDate: dateFormat(new Date(), "yyyy-mm-dd"),
       activePage: activePage || "",
       pages: pages || {},
       pagesIds: pagesIds || [],
@@ -242,6 +243,10 @@ class App extends Component {
       var pagesIds = state.pagesIds;
       var activePageId = state.activePage;
       var currentPage = pages[activePageId];
+
+      if (currentPage === undefined) {
+        return;
+      }
 
       var pagesStr = JSON.stringify(pages);
       localStorage.setItem("pages", pagesStr);
