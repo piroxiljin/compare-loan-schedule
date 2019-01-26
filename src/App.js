@@ -46,6 +46,10 @@ class App extends Component {
     this.handleAddLoanTask = this.handleAddLoanTask.bind(this);
     this.handleRemoveLoanTask = this.handleRemoveLoanTask.bind(this);
     this.handleRenameLoan = this.handleRenameLoan.bind(this);
+    this.handleAddPaymentClicked = this.handleAddPaymentClicked.bind(this);
+    this.handleAdditionalPaymentChanged = this.handleAdditionalPaymentChanged.bind(this)
+    this.handleAdditionalPaymentFocus = this.handleAdditionalPaymentFocus.bind(this);
+    this.handleAdditionalPaymentBlur = this.handleAdditionalPaymentBlur.bind(this);
     this.updateContent = this.updateContent.bind(this);
 
     var pages = {};
@@ -78,7 +82,8 @@ class App extends Component {
       activePage: activePage || "",
       pages: pages || {},
       pagesIds: pagesIds || [],
-      renameLoan: false
+      renameLoan: false,
+      minimalAdditionalPayment: 1000
     };
   }
 
@@ -163,14 +168,14 @@ class App extends Component {
 
     const newId = uniqueID();
     pagesIds.push(newId);
-    pages[newId] = {id: newId,
-      title: currentPage ? currentPage.title : "new loan",
-      baseLoanRate: currentPage ? currentPage.baseLoanRate : this.state.baseLoanRate,
-      issueDate: currentPage ? currentPage.issueDate : this.state.issueDate,
-      baseLoan: currentPage ? currentPage.baseLoan : this.state.baseLoan,
-      basePeriods: currentPage ? currentPage.basePeriods : this.state.basePeriods,
-      isReady: false,
-    };
+    pages[newId] = Object.assign(
+      {title: "new loan"},
+      currentPage, 
+      {
+        id: newId,
+        isReady: false,
+      }
+    );
     this.setState({
       pages: pages,
       pagesIds: pagesIds,
@@ -213,6 +218,92 @@ class App extends Component {
     
     this.updateContent();
   }
+
+  handleAddPaymentClicked(paymentIndex) {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+    var additionalPayments = currentPage.additionalPayments ? currentPage.additionalPayments : {};
+    if (additionalPayments[paymentIndex]) {
+      additionalPayments[paymentIndex].makeEdit = true;
+      additionalPayments[paymentIndex].editValue = this.state.minimalAdditionalPayment;
+      additionalPayments[paymentIndex].value = this.state.minimalAdditionalPayment;
+    } else {
+      additionalPayments[paymentIndex] = { makeEdit: true, value: this.state.minimalAdditionalPayment, editValue: this.state.minimalAdditionalPayment };
+    }
+
+    currentPage.additionalPayments = additionalPayments;
+    pages[activePageId] = currentPage;
+    this.setState({
+      pages: pages,
+    });
+    
+    this.updateContent();
+  }
+
+  handleAdditionalPaymentChanged(paymentIndex, e) {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+    var additionalPayments = currentPage.additionalPayments ? currentPage.additionalPayments : {};
+    console.assert(additionalPayments[paymentIndex], "Attempt to change not existed additional payment");
+
+    additionalPayments[paymentIndex].editValue = e.target.value;
+
+    currentPage.additionalPayments = additionalPayments;
+    pages[activePageId] = currentPage;
+    this.setState({
+      pages: pages,
+    });
+    
+    this.updateContent();
+  }
+
+  handleAdditionalPaymentFocus(paymentIndex, e) {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+    var additionalPayments = currentPage.additionalPayments ? currentPage.additionalPayments : {};
+
+    additionalPayments[paymentIndex].editValue = additionalPayments[paymentIndex].value;
+    additionalPayments[paymentIndex].makeEdit = true;
+
+    currentPage.additionalPayments = additionalPayments;
+    pages[activePageId] = currentPage;
+    this.setState({
+      pages: pages,
+    });
+    
+    this.updateContent();
+  }
+
+  handleAdditionalPaymentBlur(paymentIndex, e) {
+    var pages = this.state.pages;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
+    var additionalPayments = currentPage.additionalPayments ? currentPage.additionalPayments : {};
+
+    try {
+      var newValue = parseFloat(additionalPayments[paymentIndex].editValue);
+      additionalPayments[paymentIndex].value = isNaN(newValue) ? 0 : newValue;
+    } 
+    catch(e) {
+      additionalPayments[paymentIndex].value = 0;
+    }
+    additionalPayments[paymentIndex].makeEdit = false;
+    if (additionalPayments[paymentIndex].value === 0) {
+      delete additionalPayments[paymentIndex];
+    }
+
+    currentPage.additionalPayments = additionalPayments;
+    pages[activePageId] = currentPage;
+    this.setState({
+      pages: pages,
+    });
+    
+    this.updateContent();
+  }
+
 
   handleTabChange = (value) => {
     this.setState({
@@ -262,7 +353,8 @@ class App extends Component {
         baseLoanRate: currentPage ? currentPage.baseLoanRate : state.baseLoanRate, 
         issueDate: currentPage ? currentPage.issueDate : state.issueDate,
         baseLoan: currentPage ? currentPage.baseLoan : state.baseLoan,
-        basePeriods: currentPage ? currentPage.basePeriods : state.basePeriods
+        basePeriods: currentPage ? currentPage.basePeriods : state.basePeriods,
+        additionalPayments: currentPage ? currentPage.additionalPayments : {}
       };
 
       var calcResults = this.preparePayments(loanDesc);
@@ -300,7 +392,8 @@ class App extends Component {
     var activePageId = this.state.activePage;
     var currentPage = pages[activePageId];
 
-    const payments = currentPage && currentPage.payments;
+    const payments = (currentPage && currentPage.payments) ? currentPage.payments : [];
+    const additionalPayments = (currentPage && currentPage.additionalPayments) ? currentPage.additionalPayments : {};
     const contentIsReady = currentPage && currentPage.isReady;
     
     const content = currentPage && <div className={this.props.classes.taskContent}>
@@ -313,9 +406,13 @@ class App extends Component {
                               onBaseLoanRateChange={this.handleBaseLoanRateChange}
                               issueDate={currentPage.issueDate}
                               onIssueDateChange={this.handleIssueDateChange}
-                              isReady={contentIsReady} payments={payments}
+                              isReady={contentIsReady} payments={payments} additionalPayments={additionalPayments}
                               baseMounthPayment={currentPage.baseMounthPayment}
-                              interestsOverall={currentPage.interestsOverall} /> 
+                              interestsOverall={currentPage.interestsOverall} 
+                              onAddPaymentClicked={this.handleAddPaymentClicked}
+                              onAdditionalPaymentChanged={this.handleAdditionalPaymentChanged}
+                              onAdditionalPaymentFocus={this.handleAdditionalPaymentFocus}
+                              onAdditionalPaymentBlur={this.handleAdditionalPaymentBlur} /> 
                           </div>;
     
     return (
