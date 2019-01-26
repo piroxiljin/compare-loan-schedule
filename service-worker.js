@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/compare-loan-schedule/precache-manifest.447d26c2d8d952cdc82f47b65cfb1738.js"
+  "/compare-loan-schedule/precache-manifest.b5bbaff34b0bcd0d447f745ce0a6294a.js"
 );
 
 workbox.clientsClaim();
