@@ -1,3 +1,10 @@
+function getMounthlyPayment(debt, yearRate, periods) {
+  const currentMounthRateRought = yearRate / 12.0;
+  const currentTempRateK = Math.pow((1.0 + currentMounthRateRought), periods);
+  const currentK = currentMounthRateRought * currentTempRateK / (currentTempRateK - 1.0);
+  return debt * currentK;
+}
+
 export function calculateSchedule(loanParams) {
     var payments = [];
     const currentYearRate = parseFloat(loanParams.baseLoanRate);
@@ -9,12 +16,10 @@ export function calculateSchedule(loanParams) {
     var currentYear = new Date(issueDate).getYear() + 1900;
     var currentMonth = new Date(issueDate).getMonth();
 
-    var currentMounthRateRought = currentYearRate / 12.0;
-    var currentTempRateK = Math.pow((1.0 + currentMounthRateRought), restPeriods);
-    var currentK = currentMounthRateRought * currentTempRateK / (currentTempRateK - 1.0);
-    var currentMounthPayment = currentDebt * currentK;
+    var currentMounthPayment = getMounthlyPayment(currentDebt, currentYearRate, restPeriods);
     const baseMounthPayment = currentMounthPayment;
     var currentPaymentNumber = 1;
+    const additionalPayments = loanParams.additionalPayments;
 
     var dayOfYears = [366, 365, 365, 365];
     var getDaysInYear = (year) => dayOfYears[year % 4];
@@ -30,8 +35,10 @@ export function calculateSchedule(loanParams) {
       const monthRate = currentYearRate / daysInYear * daysInMonth;
       const interest = currentDebt * monthRate;
       const paymentDate = (currentMonth + 1) % 12;
+      const paymentYear = currentYear + (currentMonth === 11 ? 1 : 0);
       var payment = currentMounthPayment;
-      var retirement = payment - interest;
+      const currentAdditionalPayment = additionalPayments ? (additionalPayments[currentPaymentNumber - 1] ? additionalPayments[currentPaymentNumber - 1].value : 0) : 0;
+      var retirement = payment - interest + currentAdditionalPayment;
       if (currentDebt - retirement < 300) {
         payment = interest + currentDebt;
         retirement = currentDebt;
@@ -43,7 +50,7 @@ export function calculateSchedule(loanParams) {
       //   + payment);
       payments.push({
         currentDebt: parseFloat(currentDebt),
-        periodDate: currentYear + "-" + (paymentDate+1), // [0 .. 11] => [1 .. 12]
+        periodDate: paymentYear + "-" + (paymentDate+1), // [0 .. 11] => [1 .. 12]
         paymentNumber: currentPaymentNumber,
         payment: payment,
         interest: interest,
@@ -59,6 +66,9 @@ export function calculateSchedule(loanParams) {
       }
       currentDebt -= retirement;
       restPeriods -= 1;
+      if(currentAdditionalPayment > 0) {
+        currentMounthPayment = getMounthlyPayment(currentDebt, currentYearRate, restPeriods);
+      }
     }
     return {
       payments : payments,
