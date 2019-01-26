@@ -168,14 +168,14 @@ class App extends Component {
 
     const newId = uniqueID();
     pagesIds.push(newId);
-    pages[newId] = {id: newId,
-      title: currentPage ? currentPage.title : "new loan",
-      baseLoanRate: currentPage ? currentPage.baseLoanRate : this.state.baseLoanRate,
-      issueDate: currentPage ? currentPage.issueDate : this.state.issueDate,
-      baseLoan: currentPage ? currentPage.baseLoan : this.state.baseLoan,
-      basePeriods: currentPage ? currentPage.basePeriods : this.state.basePeriods,
-      isReady: false,
-    };
+    pages[newId] = Object.assign(
+      {title: "new loan"},
+      currentPage, 
+      {
+        id: newId,
+        isReady: false,
+      }
+    );
     this.setState({
       pages: pages,
       pagesIds: pagesIds,
