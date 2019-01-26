@@ -8,9 +8,8 @@ import TabContentController from './TabContentController';
 import { calculateSchedule } from './loanUtils';
 
 
-var objectHash = require('object-hash');
-var deepEqual = require('deep-equal');
 var dateFormat = require('dateformat');
+var deepcopy = require('deep-copy');
 
 const styles = theme => ( {
   app: {
@@ -170,7 +169,7 @@ class App extends Component {
     pagesIds.push(newId);
     pages[newId] = Object.assign(
       {title: "new loan"},
-      currentPage, 
+      deepcopy(currentPage),
       {
         id: newId,
         isReady: false,
