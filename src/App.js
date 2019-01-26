@@ -158,14 +158,17 @@ class App extends Component {
   handleAddLoanTask() {
     var pages = this.state.pages;
     var pagesIds = this.state.pagesIds;
+    var activePageId = this.state.activePage;
+    var currentPage = pages[activePageId];
 
     const newId = uniqueID();
     pagesIds.push(newId);
-    pages[newId] = {title: "new loan", id: newId,
-      baseLoanRate: this.state.baseLoanRate,
-      issueDate: this.state.issueDate,
-      baseLoan: this.state.baseLoan,
-      basePeriods: this.state.basePeriods,
+    pages[newId] = {id: newId,
+      title: currentPage ? currentPage.title : "new loan",
+      baseLoanRate: currentPage ? currentPage.baseLoanRate : this.state.baseLoanRate,
+      issueDate: currentPage ? currentPage.issueDate : this.state.issueDate,
+      baseLoan: currentPage ? currentPage.baseLoan : this.state.baseLoan,
+      basePeriods: currentPage ? currentPage.basePeriods : this.state.basePeriods,
       isReady: false,
     };
     this.setState({
