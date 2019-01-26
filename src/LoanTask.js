@@ -18,6 +18,18 @@ const styles = theme => ({
 
 function LoanTask(props) {
   const loader = <CircularProgress />
+  const preparePaymentTable = (payments, additionalPayments) => {
+    return payments.map((item, index) => {
+      var result = Object.assign(item, additionalPayments[index] );
+      result.additionalPayment = additionalPayments[index] ? additionalPayments[index].value : 0;
+      result.additionalPaymentEdit = additionalPayments[index] ? additionalPayments[index].editValue : 0;
+      delete result.value;
+      delete result.editValue;
+      return result;
+    } );
+  }
+
+  const paymentTableValue = preparePaymentTable(props.payments, props.additionalPayments ? props.additionalPayments : {});
   return <Grid container spacing={16} justify="center" >
     <Grid item>
       <Paper>
@@ -36,7 +48,11 @@ function LoanTask(props) {
     {(props.isReady 
       && <> <Grid item>
         <Paper className={props.classes.tablePaper}>
-          <PaymentTable payments={props.payments}/>
+          <PaymentTable payments={paymentTableValue}
+            onAddPaymentClicked={props.onAddPaymentClicked}
+            onAdditionalPaymentChanged={props.onAdditionalPaymentChanged}
+            onAdditionalPaymentFocus={props.onAdditionalPaymentFocus}
+            onAdditionalPaymentBlur={props.onAdditionalPaymentBlur} />
         </Paper>
       </Grid>
       <Grid item>
